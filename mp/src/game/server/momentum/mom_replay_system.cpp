@@ -286,25 +286,25 @@ void CMomentumReplaySystem::TogglePause() { m_bPaused = !m_bPaused; }
 
 void CMomentumReplaySystem::StartPlayback(bool firstperson)
 {
-    if (m_pPlayer)
-    {
-        SetWasInReplay();
+	if (m_pPlayer)
+	{
+		SetWasInReplay();
 
-        m_pPlayer->m_SrvData.m_RunData.m_vecLastPos = m_pPlayer->GetAbsOrigin();
-        m_pPlayer->m_SrvData.m_RunData.m_angLastAng = m_pPlayer->GetAbsAngles();
-        m_pPlayer->m_SrvData.m_RunData.m_vecLastVelocity = m_pPlayer->GetAbsVelocity();
-        m_pPlayer->m_SrvData.m_RunData.m_fLastViewOffset = m_pPlayer->GetViewOffset().z;
-        //memcpy(m_SavedRunStats.m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
-        m_nSavedAccelTicks = m_pPlayer->GetAccelTicks();
-        m_nSavedPerfectSyncTicks = m_pPlayer->GetPerfectSyncTicks();
-        m_nSavedStrafeTicks = m_pPlayer->GetStrafeTicks();
-        CMomentumReplayGhostEntity *pGhost = m_pPlaybackReplay->GetRunEntity();
+		m_pPlayer->m_SrvData.m_RunData.m_vecLastPos = m_pPlayer->GetAbsOrigin();
+		m_pPlayer->m_SrvData.m_RunData.m_angLastAng = m_pPlayer->GetAbsAngles();
+		m_pPlayer->m_SrvData.m_RunData.m_vecLastVelocity = m_pPlayer->GetAbsVelocity();
+		m_pPlayer->m_SrvData.m_RunData.m_fLastViewOffset = m_pPlayer->GetViewOffset().z;
+		//memcpy(m_SavedRunStats.m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
+		m_nSavedAccelTicks = m_pPlayer->GetAccelTicks();
+		m_nSavedPerfectSyncTicks = m_pPlayer->GetPerfectSyncTicks();
+		m_nSavedStrafeTicks = m_pPlayer->GetStrafeTicks();
+		CMomentumReplayGhostEntity *pGhost = m_pPlaybackReplay->GetRunEntity();
 
-        if (pGhost)
-            pGhost->StartRun(firstperson);
+		if (pGhost)
+			pGhost->StartRun(firstperson);
 
-        m_bPlayingBack = true;
-    }
+		m_bPlayingBack = true;
+	}
 }
 
 void CMomentumReplaySystem::UnloadPlayback(bool shutdown)
@@ -395,8 +395,7 @@ CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play, CMOMReplayCommands::PlayReplayFirs
 
 CON_COMMAND(mom_replay_play_loaded, "Begins playing back a loaded replay (in first person), if there is one.")
 {
-    auto pPlaybackReplay = g_ReplaySystem.m_pPlaybackReplay;
-    if (pPlaybackReplay && !g_ReplaySystem.m_bPlayingBack)
+    if (g_ReplaySystem.GetPlaybackReplay() && !g_ReplaySystem.IsPlayingBack())
     {
         g_ReplaySystem.StartPlayback(true);
         mom_replay_timescale.SetValue(1.0f);
@@ -405,9 +404,9 @@ CON_COMMAND(mom_replay_play_loaded, "Begins playing back a loaded replay (in fir
 
 CON_COMMAND(mom_replay_restart, "Restarts the current spectated replay, if there is one.")
 {
-    if (g_ReplaySystem.m_bPlayingBack)
+    if (g_ReplaySystem.IsPlayingBack())
     {
-        auto pGhost = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
+        auto pGhost = g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
             pGhost->m_SrvData.m_iCurrentTick = 0;
@@ -417,7 +416,7 @@ CON_COMMAND(mom_replay_restart, "Restarts the current spectated replay, if there
 
 CON_COMMAND(mom_replay_stop, "Stops playing the current replay.")
 {
-    if (g_ReplaySystem.m_bPlayingBack)
+    if (g_ReplaySystem.IsPlayingBack())
     {
         g_ReplaySystem.StopPlayback();
     }
@@ -425,9 +424,9 @@ CON_COMMAND(mom_replay_stop, "Stops playing the current replay.")
 
 CON_COMMAND(mom_replay_pause, "Toggle pausing and playing the playback replay.")
 {
-    if (g_ReplaySystem.m_bPlayingBack)
+    if (g_ReplaySystem.IsPlayingBack())
     {
-        auto pGhost = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
+        auto pGhost = g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
             pGhost->m_SrvData.m_bIsPaused = !pGhost->m_SrvData.m_bIsPaused;
@@ -437,9 +436,9 @@ CON_COMMAND(mom_replay_pause, "Toggle pausing and playing the playback replay.")
 
 CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
 {
-    if (g_ReplaySystem.m_bPlayingBack)
+    if (g_ReplaySystem.IsPlayingBack())
     {
-        auto pGhost = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
+        auto pGhost = g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
         if (pGhost && args.ArgC() > 1)
         {
             int tick = Q_atoi(args[1]);
@@ -454,9 +453,9 @@ CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
 
 CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
 {
-    if (g_ReplaySystem.m_bPlayingBack)
+    if (g_ReplaySystem.IsPlayingBack())
     {
-        auto pGhost = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
+        auto pGhost = g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
             pGhost->m_SrvData.m_iCurrentTick =
