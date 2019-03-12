@@ -4,7 +4,7 @@
 #include "mom_player_shared.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
-#include "mom_timer.h"
+#include "run/mom_replay_base.h"
 #include "util/baseautocompletefilelist.h"
 #include "fmtstr.h"
 #include "steam/steam_api.h"
@@ -25,6 +25,7 @@ CMomentumReplaySystem::CMomentumReplaySystem(const char* pName):
     m_iTickCount(0),
     m_iStartRecordingTick(-1),
     m_iStartTimerTick(-1),
+    m_iStopTimerTick(-1),
     m_fRecEndTime(-1.0f)
 {
     m_szMapHash[0] = '\0';
@@ -131,7 +132,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     if (StoreReplay(newRecordingPath, MAX_PATH))
     {
         // Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
-        Log("Recording Stopped! Ticks: %i\n", postTrimTickCount);
+        Log("Recording Stopped! Ticks: %i\n", m_iTickCount);
 
         if (replaySavedEvent)
         {
@@ -161,6 +162,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     // Reset the m_i*Tick s
     m_iStartRecordingTick = -1;
     m_iStartTimerTick = -1;
+    m_iStopTimerTick = -1;
     m_pRecordingReplay = nullptr;
 }
 
@@ -272,6 +274,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     m_pRecordingReplay->SetRunFlags(m_pPlayer->m_SrvData.m_RunData.m_iRunFlags);
     m_pRecordingReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     m_pRecordingReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
+    m_pRecordingReplay->SetStopTick(m_iStopTimerTick - m_iStartRecordingTick);
     m_pRecordingReplay->SetBonusZone(g_pMomentumTimer->GetBonus());
 }
 
@@ -331,6 +334,7 @@ void CMomentumReplaySystem::LoadReplayGhost()
         static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
     pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
     pGhost->m_SrvData.m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
+    pGhost->m_SrvData.m_RunData.m_iRunTimeTicks = m_pPlaybackReplay->GetStopTick() - m_pPlaybackReplay->GetStartTick();
     pGhost->m_SrvData.m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
     pGhost->m_SrvData.m_flTickRate = m_pPlaybackReplay->GetTickInterval();
     pGhost->SetPlaybackReplay(m_pPlaybackReplay);

@@ -80,8 +80,9 @@ class CReplayHeader : public ISerializable
         char date[20];
         reader.GetStringManualCharCount(date, sizeof(date));
         m_iRunDate = Q_atoui64(date);
-        m_iStartDif = reader.GetInt();
+        m_iStartTick = reader.GetInt();
         m_iBonusZone = reader.GetInt();
+        m_iStopTick = reader.GetInt();
     }
 
   public:
@@ -99,8 +100,9 @@ class CReplayHeader : public ISerializable
         char date[20];
         Q_snprintf(date, 20, "%ld", m_iRunDate);
         writer.PutString(date);
-        writer.PutInt(m_iStartDif);
+        writer.PutInt(m_iStartTick);
         writer.PutInt(m_iBonusZone);
+        writer.PutInt(m_iStopTick);
     }
 
     virtual CReplayHeader &operator=(const CReplayHeader &other)
@@ -113,7 +115,8 @@ class CReplayHeader : public ISerializable
         m_fRunTime = other.m_fRunTime;
         m_iRunFlags = other.m_iRunFlags;
         m_iRunDate = other.m_iRunDate;
-        m_iStartDif = other.m_iStartDif;
+        m_iStartTick = other.m_iStartTick;
+        m_iStopTick = other.m_iStopTick;
         m_iBonusZone = other.m_iBonusZone;
         return *this;
     }
@@ -127,6 +130,7 @@ class CReplayHeader : public ISerializable
     float m_fRunTime;                            // The total runtime of the run in seconds.
     uint32 m_iRunFlags;                          // The flags the player ran with.
     time_t m_iRunDate;                           // The date this run was achieved.
-    int m_iStartDif;                             // The difference between the tick of the start timer and record
+    int m_iStartTick;                            // The tick where the timer was started (difference from record start -> timer start)
+    int m_iStopTick;                             // The tick where the timer was stopped
     int m_iBonusZone;                            // The bonus zone number
 };
